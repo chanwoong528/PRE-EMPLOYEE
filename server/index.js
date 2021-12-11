@@ -3,7 +3,6 @@ require("dotenv").config({ path: "../env/port.env" });
 const express = require("express");
 const cors = require("cors");
 const PORT = process.env.SERVER_PORT || 6000;
-
 const app = express();
 
 const { Client, Query } = require("pg");
@@ -33,6 +32,14 @@ app.use(
     credentials: true,
   })
 );
+
+const passport = require("./config/passport");
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use('/', require('./routes/home'));
+app.use('/auth', require('./routes/auths'));
+app.use('*', res.status(404).send({ err: "Invalid Access" }));
 
 app.listen(PORT, () => {
   console.log(`Server 🚀: ${PORT}`);
