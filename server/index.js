@@ -1,27 +1,15 @@
-require("dotenv").config({ path: "../env/port.env" });
-require("dotenv").config({ path: "../env/db.env" });
+
+require("dotenv").config({ path: "../env/server.env" });
 const express = require("express");
 const cors = require("cors");
-
-const { Client, Query } = require("pg");
-const db = new Client({
-  user: process.env.PG_USER,
-  host: process.env.PG_HOST,
-  database: process.env.PG_DB,
-  password: process.env.PG_PW,
-  port: process.env.PG_PORT,
-});
-db.connect((err) => {
-  if (err) {
-    console.log(err);
-  } else {
-    console.log("db connected");
-  }
-});
-
-const PORT = process.env.SERVER_PORT || 6000;
 const app = express();
 
+// DB
+const db = require("./config/db");
+db().connect();
+
+// others
+app.use(express.static(__dirname+'/public'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
@@ -32,27 +20,21 @@ app.use(
   })
 );
 
-app.get("/", async (req, res) => {
-  const getUsersQuery = new Query(
-    "select * from pre_emp_users where email='cksdnd004@naver.com'"
-  );
-  const User = await new Promise((resolve, reject) => {
-    db.query(getUsersQuery, (err, result) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(...result.rows);
-      }
-    });
-  });
+// session
+const session = require('express-session');
+app.use(session({secret:process.env.SERVER_SESSION_SECRET, resave:true, saveUninitialized:true}));
 
-  if (!User) {
-    res.status(404).send({ message: "no User found" });
-  } else {
-    res.status(200).send({ User });
-  }
-});
+// passport
+const passport = require("./config/passport");
+app.use(passport.initialize());
+app.use(passport.session());
 
+// routes
+app.use('/auth', require('./routes/auths'));
+app.get('*', (req, res) => res.status(404).send({ err: "Invalid Access" }));
+
+// port
+const PORT = process.env.SERVER_PORT || 6000;
 app.listen(PORT, () => {
   console.log(`Server 🚀: ${PORT}`);
 });
