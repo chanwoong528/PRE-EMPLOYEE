@@ -32,27 +32,29 @@ router.post("/create", async (req, res) => {
     bcrypt.genSalt(process.env.BC_SALT_ROUNDS, (err, salt) => {
       if (err)
         res.status(500).send({ msg: "bcrypt genSalt: An error occurred." });
-      bcrypt.hash(password, salt, (err, hash) => {
-        if (err)
-          res.status(500).send({ msg: "bcrypt hash: An error occurred." });
-        else {
-          let query = new Query(`INSERT INTO public.pre_emp_users(
-            email, password, firstname, lastname, "position", created_at, updated_at)
-            VALUES (${email}, ${hash}, ${firstname}, ${lastname}, ${positions}, TO_CHAR(NOW(), "YYYY-MM-DD"),TO_CHAR(NOW(), "YYYY-MM-DD"))`);
-          let positions = position.join(",");
-          console.log(positions);
-          db().query(
-            query,
-            (err, result) => {
-              if (err)
-                res.status(500).send({ msg: "DB Create: An error occurred." });
-              else {
-                res.status(201).send({ msg: "" });
+      else{
+        bcrypt.hash(password, salt, (err, hash) => {
+          if (err)
+            res.status(500).send({ msg: "bcrypt hash: An error occurred." });
+          else {
+            let query = new Query(`INSERT INTO public.pre_emp_users(
+              email, password, firstname, lastname, "position", created_at, updated_at)
+              VALUES (${email}, ${hash}, ${firstname}, ${lastname}, ${positions}, TO_CHAR(NOW(), "YYYY-MM-DD"),TO_CHAR(NOW(), "YYYY-MM-DD"))`);
+            let positions = position.join(",");
+            console.log(positions);
+            db().query(
+              query,
+              (err, result) => {
+                if (err)
+                  res.status(500).send({ msg: "DB Create: An error occurred." });
+                else {
+                  res.status(201).send({ msg: "" });
+                }
               }
-            }
-          );
-        }
-      });
+            );
+          }
+        });
+      }
     });
   }
 });
