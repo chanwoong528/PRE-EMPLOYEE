@@ -25,9 +25,10 @@ router.post("/create", async (req, res) => {
   } else if (password !== passwordConf) {
     res.status(400).send({ msg: "Password doesn't match." });
   }
-  // else if (!util.validateEmail(email)) {
-  //   res.status(400).send({ msg: "Invalid E-mail address." });
-  // }
+  else if (!util.validateEmail(email)) {
+    console.log("regex not passed");
+    res.status(400).send({ msg: "Invalid E-mail address." });
+  }
   else {
     // passed validation, register user
     bcrypt.genSalt(+process.env.BC_SALT_ROUNDS, (err, salt) => {
@@ -58,17 +59,27 @@ router.post("/create", async (req, res) => {
   }
 });
 
-router.post("/login", (req, res) => {
-  console.log("111111111111");
-  passport.authenticate("local-login", (err, user) => {
-    console.log("2222222222222");
-    if (err) res.status(500).send({ msg: "login: An error occurred." });
-    else if (!user) res.status(400).send({ msg: "No such user found." });
-    else {
-      res.status(200).send(user);
-    }
-  });
-});
+router.post("/login", (req, res, next) => {
+  if (!req.body.email || !req.body.password){
+    console.log("missing");
+    return res.status(400).send({ msg:"E-mail or password is missing." });
+  }
+  passport.authenticate("local-login", (err, user, data) => {
+  if (err) {
+    console.log("err");
+    return res.status(500).send({ status:500, msg: "login: An error occurred." });
+  }
+  if (!user) {
+    console.log("incorrect");
+    return res.status(400).send({ status:400, msg: "Incorrect E-mail or password." });
+  }
+  else {
+    console.log("200");
+    return res.status(200).send(user);
+  }
+})(req, res, next);
+}
+);
 
 router.get(
   "/google",

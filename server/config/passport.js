@@ -13,7 +13,7 @@ passport.serializeUser(function (user, done) {
 
 passport.deserializeUser(function (email, done) {
   let query = new Query(`SELECT * FROM pre_emp_users WHERE email=${email}`);
-  db().query(query, (err, result) => {
+  db.query(query, (err, result) => {
     return done(err, result);
   });
 });
@@ -27,19 +27,34 @@ passport.use(
       passReqToCallback: true,
     },
     async (req, email, password, done) => {
-      if (!email || !password)
-        return done(null, false, { msg: "Missing E-mail or password." });
       let query = new Query(
         `SELECT * FROM pre_emp_users WHERE email='${email}'`
       );
-      const { rows } = await db().query(query);
-      if (!rows) return done(null, false);
-      bcrypt.compare(password, rows[0].password, (err, result) => {
-        if (err) return done(err);
-        if (!result) return done(null, false);
-        const { password, ...user } = rows[0];
-        return done(null, user);
-      });
+      try{
+        db.connect((err, client, release) => {
+          if (err) throw new Error(err);
+          client.query(query, (err, data) => {
+            release();
+            if (err) throw new Error(err);
+            if (!data.rows[0]) {
+              return done(null, false, { status:400, msg:"No such user found." });
+            }
+            bcrypt.compare(password, data.rows[0].password, (err, result) => {
+              if (err) throw new Error(err);
+              if (!result) return done(null, false, { status:400, msg:"Password doesn't match." });
+              // console.log(data.rows[0]);
+              const { password, ...user } = data.rows[0];
+              return done(null, user, { status:200, msg:"User verified." });
+            });
+          });
+          
+        });
+      } catch(err) {
+        return done (err, false, { status:500, msg:"db.connect error" });
+      }
+      
+      // const { rows } = await db.query(query);
+      
     }
   )
 );
@@ -54,9 +69,9 @@ passport.use(
     },
     (accessToken, refreshToken, profile, account, cb) => {
       let query = new Query(
-        `SELECT * FROM pre_emp_users WHERE email=${account.emails[0].value}`
+        `SELECT * FROM pre_emp_users WHERE email='${account.emails[0].value}'`
       );
-      db().query(query, (err, result) => {
+      db.query(query, (err, result) => {
         if (err) return cb(err);
         if (result) {
           // found a user

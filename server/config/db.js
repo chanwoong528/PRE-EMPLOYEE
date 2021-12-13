@@ -13,4 +13,8 @@ pool.on('connect', () => {
   console.log('DB connected');
 });
 
+pool.on('error', (err, client) => {
+  console.log("db.js: An error occurred.");
+});
+
 module.exports = () => { return pool };
