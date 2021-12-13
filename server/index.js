@@ -1,28 +1,14 @@
-require("dotenv").config({ path: "../env/db.env" });
-require("dotenv").config({ path: "../env/port.env" });
+require("dotenv").config({ path: "../env/server.env" });
 const express = require("express");
 const cors = require("cors");
-const PORT = process.env.SERVER_PORT || 6000;
 const app = express();
 
-const { Client, Query } = require("pg");
+// DB
+const db = require("./config/db");
+db().connect();
 
-let client = new Client({
-  user: process.env.PG_USER,
-  host: process.env.PG_HOST,
-  database: process.env.PG_DB,
-  password: process.env.PG_PW,
-  port: process.env.PG_PORT,
-});
-
-client.connect((err) => {
-  if (err) {
-    console.log(err);
-  } else {
-    console.log("db connected");
-  }
-});
-
+// others
+app.use(express.static(__dirname+'/public'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
@@ -33,14 +19,21 @@ app.use(
   })
 );
 
+// session
+const session = require('express-session');
+app.use(session({secret:process.env.SERVER_SESSION_SECRET, resave:true, saveUninitialized:true}));
+
+// passport
 const passport = require("./config/passport");
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use('/', require('./routes/home'));
+// routes
 app.use('/auth', require('./routes/auths'));
-app.use('*', res.status(404).send({ err: "Invalid Access" }));
+app.get('*', (req, res) => res.status(404).send({ err: "Invalid Access" }));
 
+// port
+const PORT = process.env.SERVER_PORT || 6000;
 app.listen(PORT, () => {
   console.log(`Server 🚀: ${PORT}`);
 });
