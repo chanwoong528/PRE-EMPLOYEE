@@ -5,12 +5,19 @@ function UserRegisterForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConf, setPasswordConf] = useState("");
-  const [fname, setFname] = useState("");
-  const [lname, setLname] = useState("");
-  const [positions, setPositions] = useState([]);
+  const [firstname, setFname] = useState("");
+  const [lastname, setLname] = useState("");
+  const [position, setPositions] = useState([]);
   const onSubmitRegister = async (e) => {
     e.preventDefault();
-    const req = { email, password, passwordConf, fname, lname, positions };
+    const req = {
+      email,
+      password,
+      passwordConf,
+      firstname,
+      lastname,
+      position,
+    };
     console.log(req);
     //fetch
     const res = await fetch("http://localhost:5000/auth/create", {
@@ -21,7 +28,9 @@ function UserRegisterForm() {
     });
     const data = await res.json();
     if (res.ok) {
+      alert(data.msg);
     } else {
+      alert(data.msg);
     }
   };
   const onClickGoogleSignUp = (e) => {
@@ -29,8 +38,8 @@ function UserRegisterForm() {
     console.log("google sign up");
   };
   const onChangeCheckbox = (e) => {
-    let newPos = [...positions, e.target.name];
-    if (positions.includes(e.target.name)) {
+    let newPos = [...position, e.target.name];
+    if (position.includes(e.target.name)) {
       newPos = newPos.filter((item) => item !== e.target.name);
     }
     setPositions(newPos);
@@ -60,18 +69,18 @@ function UserRegisterForm() {
           setChange={setPasswordConf}
         />
         <Input
-          labelFor="fname"
+          labelFor="firstname"
           labelTitle="First Name: "
           inputType="text"
           setChange={setFname}
-          inputVal={fname}
+          inputVal={firstname}
         />
         <Input
-          labelFor="lname"
+          labelFor="lastname"
           labelTitle="Last Name: "
           inputType="text"
           setChange={setLname}
-          inputVal={lname}
+          inputVal={lastname}
         />
         <div>
           <input
