@@ -2,6 +2,7 @@ require("dotenv").config({ path: "../env/server.env" });
 const express = require("express");
 const cors = require("cors");
 const app = express();
+const passport = require("./config/passport");
 
 // DB
 const db = require("./config/db");
@@ -19,8 +20,10 @@ app.use(
   })
 );
 
-// session
+// session / passport
 const session = require("express-session");
+const bodyParser = require("body-parser");
+app.use(express.static("public"));
 app.use(
   session({
     secret: process.env.SERVER_SESSION_SECRET,
@@ -28,9 +31,7 @@ app.use(
     saveUninitialized: true,
   })
 );
-
-// passport
-const passport = require("./config/passport");
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(passport.initialize());
 app.use(passport.session());
 
