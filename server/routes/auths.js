@@ -38,13 +38,11 @@ router.post("/create", async (req, res) => {
         else {
           let query = new Query(`INSERT INTO public.pre_emp_users(
             email, password, firstname, lastname, "position", created_at, updated_at)
-            VALUES ($1, $2, $3, $4, $5, TO_CHAR(NOW(), "YYYY-MM-DD"),TO_CHAR(NOW(), "YYYY-MM-DD"))`);
+            VALUES (${email}, ${hash}, ${firstname}, ${lastname}, ${positions}, TO_CHAR(NOW(), "YYYY-MM-DD"),TO_CHAR(NOW(), "YYYY-MM-DD"))`);
           let positions = position.join(",");
           console.log(positions);
-          let values = [];
           db().query(
             query,
-            [email, hash, firstname, lastname, positions],
             (err, result) => {
               if (err)
                 res.status(500).send({ msg: "DB Create: An error occurred." });
