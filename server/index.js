@@ -1,3 +1,4 @@
+
 require("dotenv").config({ path: "../env/server.env" });
 const express = require("express");
 const cors = require("cors");
@@ -13,7 +14,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
-    origin: ["http://localhost:3000"],
+    origin: ["http://localhost:3001"],
     methods: ["POST", "PUT", "GET", "PATCH"],
     credentials: true,
   })
