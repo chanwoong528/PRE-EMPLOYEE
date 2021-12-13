@@ -25,7 +25,7 @@ passport.use('local-login', new LocalStrategy({
   },
   async (req, email, password, done) => {
     if (!email || !password) return done(null, false, { msg:"Missing E-mail or password."});
-    let query = new Query (`SELECT * FROM pre_emp_users WHERE email=${email}`);
+    let query = new Query (`SELECT * FROM pre_emp_users WHERE email='${email}'`);
     const {rows} = await db().query(query);
     if (!rows) return done(null, false);
     bcrypt.compare(password, rows[0].password, (err, result) => {
