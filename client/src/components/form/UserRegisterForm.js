@@ -76,7 +76,7 @@ function UserRegisterForm() {
           inputVal={firstname}
         />
         <Input
-          labelFor="lastname"
+          labelFor="lname"
           labelTitle="Last Name: "
           inputType="text"
           setChange={setLname}

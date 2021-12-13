@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const passport = require("../config/passport");
 require("dotenv").config({ path: "../../env/db.env" });
+
 const bcrypt = require("bcrypt");
 const { Query } = require("pg");
 const db = require("../config/db");
@@ -29,29 +30,27 @@ router.post("/create", async (req, res) => {
   // }
   else {
     // passed validation, register user
-    bcrypt.genSalt(process.env.BC_SALT_ROUNDS, (err, salt) => {
-      if (err)
+    bcrypt.genSalt(+process.env.BC_SALT_ROUNDS, (err, salt) => {
+      if (err) {
         res.status(500).send({ msg: "bcrypt genSalt: An error occurred." });
-      else{
+      } else {
         bcrypt.hash(password, salt, (err, hash) => {
           if (err)
             res.status(500).send({ msg: "bcrypt hash: An error occurred." });
           else {
+            let positions = position.join(",");
             let query = new Query(`INSERT INTO public.pre_emp_users(
               email, password, firstname, lastname, "position", created_at, updated_at)
-              VALUES (${email}, ${hash}, ${firstname}, ${lastname}, ${positions}, TO_CHAR(NOW(), "YYYY-MM-DD"),TO_CHAR(NOW(), "YYYY-MM-DD"))`);
-            let positions = position.join(",");
+              VALUES ('${email}', '${hash}', '${firstname}', '${lastname}', '${positions}',  TO_CHAR(NOW(),'YYYY-MM-DD'), TO_CHAR(NOW(),'YYYY-MM-DD'))`);
+
             console.log(positions);
-            db().query(
-              query,
-              (err, result) => {
-                if (err)
-                  res.status(500).send({ msg: "DB Create: An error occurred." });
-                else {
-                  res.status(201).send({ msg: "" });
-                }
+            db().query(query, (err, result) => {
+              if (err)
+                res.status(500).send({ msg: "DB Create: An error occurred." });
+              else {
+                res.status(201).send({ msg: "" });
               }
-            );
+            });
           }
         });
       }
@@ -60,9 +59,11 @@ router.post("/create", async (req, res) => {
 });
 
 router.post("/login", (req, res) => {
+  console.log("111111111111");
   passport.authenticate("local-login", (err, user) => {
+    console.log("2222222222222");
     if (err) res.status(500).send({ msg: "login: An error occurred." });
-    if (!user) res.status(400).send({ msg: "No such user found." });
+    else if (!user) res.status(400).send({ msg: "No such user found." });
     else {
       res.status(200).send(user);
     }

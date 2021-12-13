@@ -5,10 +5,22 @@ function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const onSubmitLogin = (e) => {
+  const onSubmitLogin = async (e) => {
     e.preventDefault();
     const req = { email, password };
     console.log(req);
+    const res = await fetch("http://localhost:5000/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(req),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      alert(data);
+    } else {
+      alert(data);
+    }
     //fetch
   };
   const onClickGoogleLogin = async (e) => {
