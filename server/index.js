@@ -39,7 +39,7 @@ app.use("/auth", require("./routes/auths"));
 app.get("*", (req, res) => res.status(404).send({ err: "Invalid Access" }));
 
 // port
-const PORT = process.env.SERVER_PORT || 6000;
+const PORT = process.env.SERVER_PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server 🚀: ${PORT}`);
 });

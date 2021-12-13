@@ -67,19 +67,18 @@ router.post("/login", (req, res, next) => {
   passport.authenticate("local-login", (err, user, data) => {
   if (err) {
     console.log("err");
-    return res.status(500).send({ status:500, msg: "login: An error occurred." });
+    return res.status(500).send({ msg: "login: An error occurred." });
   }
   if (!user) {
     console.log("incorrect");
-    return res.status(400).send({ status:400, msg: "Incorrect E-mail or password." });
+    return res.status(400).send({ msg: "Incorrect E-mail or password." });
   }
   else {
     console.log("200");
     return res.status(200).send(user);
   }
 })(req, res, next);
-}
-);
+});
 
 router.get(
   "/google",
@@ -93,7 +92,12 @@ router.get(
     console.log("successful");
     // Successful authentication, status 200 and send .
     res.status(200);
-  }
+  } 
 );
+
+router.get('/logout', function(req, res) {
+  req.logout();
+  res.status(200).send({ msg:"session terminated." });
+});
 
 module.exports = router;

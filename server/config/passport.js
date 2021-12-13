@@ -68,6 +68,7 @@ passport.use(
       callbackURL: "http://localhost:6000/auth/google/callback",
     },
     (accessToken, refreshToken, profile, account, cb) => {
+      console.log("GoogleStrategy");
       let query = new Query(
         `SELECT * FROM pre_emp_users WHERE email='${account.emails[0].value}'`
       );

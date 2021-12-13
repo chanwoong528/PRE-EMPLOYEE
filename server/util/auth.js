@@ -13,3 +13,5 @@ auth.isLoggedIn = (req, res, next) => {
 auth.isAdmin = (req, res, next) => {
 
 }
+
+module.exports = auth;
