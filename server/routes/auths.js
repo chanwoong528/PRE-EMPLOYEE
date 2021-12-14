@@ -18,36 +18,42 @@ router.get("/failed", (req, res) => {
 router.post("/create", auth.validateLocalCreateData, async (req, res) => {
   const { email, password, firstname, lastname, position } = req.body;
   util.encryptPassword(password, async (err, hash, data) => {
-    if (err) return res.status(data.status).send({ msg:data.msg });
+    if (err) return res.status(data.status).send({ msg: data.msg });
     else {
       const result = await pgQuery.insertLocalUser(
-        pool, email, hash, firstname, lastname, position);
-      if (result) return res.status(201).send({ msg:"User registration successful." });
-      else return res.status(500).send({ msg:"User registration failed."});
+        pool,
+        email,
+        hash,
+        firstname,
+        lastname,
+        position
+      );
+      if (result)
+        return res.status(201).send({ msg: "User registration successful." });
+      else return res.status(500).send({ msg: "User registration failed." });
     }
   });
 });
 
 router.post("/login", auth.validateLocalLoginData, (req, res, next) => {
   passport.authenticate("local-login", (err, user, data) => {
-  if (err) {
-    return res.status(500).send({ msg: "login: An error occurred." });
-  }
-  if (!user) {
-    return res.status(data.status).send({ msg } = data);
-  }
-  else {
-    req.login(user, (err) => {
-      if (err) return next(err);
-      return res.status(200).send(user);
-    });
-  }
-})(req, res, next);
+    if (err) {
+      return res.status(500).send({ msg: "login: An error occurred." });
+    }
+    if (!user) {
+      return res.status(data.status).send(({ msg } = data));
+    } else {
+      req.login(user, (err) => {
+        if (err) return next(err);
+        return res.status(200).send(user);
+      });
+    }
+  })(req, res, next);
 });
 
 router.get(
   "/google",
-  passport.authenticate("google", { scope: ["profile"] })
+  passport.authenticate("google", { scope: ["email", "profile"] })
 );
 
 router.get(
@@ -60,9 +66,9 @@ router.get(
   }
 );
 
-router.get('/logout', function(req, res) {
+router.get("/logout", function (req, res) {
   req.logout();
-  res.status(200).send({ msg:"session terminated." });
+  res.status(200).send({ msg: "session terminated." });
 });
 
 module.exports = router;

@@ -3,7 +3,7 @@ const LocalStrategy = require("passport-local").Strategy;
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 require("dotenv").config({ path: "../env/oauth.env" });
 const bcrypt = require("bcrypt");
-const pgUtil = require('../utils/pgUtil');
+const pgUtil = require("../utils/pgUtil");
 
 const pool = require("../db/db.js");
 const util = require("../utils/util");
@@ -14,8 +14,8 @@ passport.serializeUser((user, done) => {
 
 passport.deserializeUser((email, done) => {
   pgUtil.selectLocalUserCB(pool, email, (err, user) => {
-    if(err) return done(err);
-    if(!user) return done(null, false);
+    if (err) return done(err);
+    if (!user) return done(null, false);
     else {
       return done(null, omitPassword(user));
     }
@@ -60,7 +60,11 @@ passport.use(
       if (!user) return done(null, false);
       bcrypt.compare(password, user.password, (err, result) => {
         if (err) return done(err);
-        if (!result) return done(null, false, { status:406, msg:"Password doesn't match." });
+        if (!result)
+          return done(null, false, {
+            status: 406,
+            msg: "Password doesn't match.",
+          });
         // console.log(data.rows[0]);
         return done(null, util.omitPassword(user));
       });
@@ -87,9 +91,10 @@ passport.use(
           // search OAuth database (oauth_users)
           // create one if non-existant
 
-          return cb(null, false, data);
+            return cb(null, false, data);
+          }
         }
-      });
+      );
     }
   )
 );
