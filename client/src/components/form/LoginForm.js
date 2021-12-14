@@ -60,7 +60,9 @@ function LoginForm() {
         <input type="submit" value="Login User" />
       </form>
 
-      <button onClick={onClickGoogleLogin}>Google</button>
+      <button>
+        <a href="http://localhost:5000/auth/google">Google</a>
+      </button>
     </div>
   );
 }
