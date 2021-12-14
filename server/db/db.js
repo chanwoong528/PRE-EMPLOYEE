@@ -11,10 +11,11 @@ const pool = new Pool({
 
 pool.on('connect', () => {
   console.log('DB connected');
+  
 });
 
-pool.on('error', (err, client) => {
-  console.log("db.js: An error occurred.");
+pool.on('error', (err) => {
+  console.log("db.js: " + err);
 });
 
 module.exports = () => { return pool };

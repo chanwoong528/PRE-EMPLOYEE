@@ -4,8 +4,7 @@ require('dotenv').config({ path: "../env/db.env" });
 const util = {};
 
 util.validateEmail = (email) => {
-  let re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return email.match(re);
+  return email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
 };
 
 util.encryptPassword = async (password, cb) => {

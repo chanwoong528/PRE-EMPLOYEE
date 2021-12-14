@@ -8,7 +8,18 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon index.js"
   },
-  "author": "moonCW kimDK",
+  "contributors": [
+    {
+      "name": "Chanwoong Moon",
+      "email": "moon528@gmail.com",
+      "url": "https://github.com/chanwoong528"
+    },
+    {
+      "name": "Dongkyun Kim",
+      "email": "s98101000@gmail.com",
+      "url": "https://github.com/donkim1212"
+    }
+  ],
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.0.1",

@@ -5,7 +5,7 @@ const app = express();
 const passport = require("./config/passport");
 
 // DB
-const db = require("./config/db");
+const db = require("./db/db");
 db().connect();
 
 // others
