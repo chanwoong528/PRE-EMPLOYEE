@@ -79,7 +79,7 @@ passport.use(
     (accessToken, refreshToken, profile, account, cb) => {
       console.log("GoogleStrategy");
       // account.emails[0].value || profile.getEmail()
-      pgUtil.selectLocalUserCB(pool, profile.getEmail(), (err, user, data) => {
+      pgUtil.selectLocalUserCB(pool, account.emails[0].value, (err, user, data) => {
         if (err) return cb(err);
         if (user) return cb(null, util.omitPassword(user));
         else {
