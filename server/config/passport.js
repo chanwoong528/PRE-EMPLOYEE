@@ -3,20 +3,49 @@ const LocalStrategy = require("passport-local").Strategy;
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 require("dotenv").config({ path: "../env/oauth.env" });
 const bcrypt = require("bcrypt");
-const { Query } = require("pg");
+const pgUtil = require('../utils/pgUtil');
 
-const db = require("./db.js")();
+const pool = require("../db/db.js");
+const util = require("../utils/util");
 
-passport.serializeUser(function (user, done) {
+passport.serializeUser((user, done) => {
   done(null, user.email);
 });
 
-passport.deserializeUser(function (email, done) {
-  let query = new Query(`SELECT * FROM pre_emp_users WHERE email=${email}`);
-  db().query(query, (err, result) => {
-    return done(err, result);
+passport.deserializeUser((email, done) => {
+  pgUtil.selectLocalUserCB(pool, email, (err, user) => {
+    if(err) return done(err);
+    if(!user) return done(null, false);
+    else {
+      return done(null, omitPassword(user));
+    }
   });
 });
+
+// passport.use(
+//   "local-login",
+//   new LocalStrategy(
+//     {
+//       usernameField: "email",
+//       passwordField: "password",
+//       passReqToCallback: true,
+//     },
+//     async (req, email, password, done) => {
+//       pgq.selectLocalUser(pool, email, (err, user, data) => {
+//         if (err) return done(err);
+//         if (!user) return done(null, false, data);
+//         else {
+//           bcrypt.compare(password, user.password, (err, result) => {
+//             if (err) return done(err);
+//             if (!result) return done(null, false, { status:406, msg:"Password doesn't match." });
+//             // console.log(data.rows[0]);
+//             return done(null, util.omitPassword(user));
+//           });
+//         }
+//       });
+//     }
+//   )
+// );
 
 passport.use(
   "local-login",
@@ -27,18 +56,13 @@ passport.use(
       passReqToCallback: true,
     },
     async (req, email, password, done) => {
-      if (!email || !password)
-        return done(null, false, { msg: "Missing E-mail or password." });
-      let query = new Query(
-        `SELECT * FROM pre_emp_users WHERE email='${email}'`
-      );
-      const { rows } = await db().query(query);
-      if (!rows) return done(null, false);
-      bcrypt.compare(password, rows[0].password, (err, result) => {
+      const user = await pgUtil.selectLocalUser(pool, email);
+      if (!user) return done(null, false);
+      bcrypt.compare(password, user.password, (err, result) => {
         if (err) return done(err);
-        if (!result) return done(null, false);
-        const { password, ...user } = rows[0];
-        return done(null, user);
+        if (!result) return done(null, false, { status:406, msg:"Password doesn't match." });
+        // console.log(data.rows[0]);
+        return done(null, util.omitPassword(user));
       });
     }
   )
@@ -50,22 +74,20 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "http://localhost:6000/auth/google/callback",
+      callbackURL: "http://localhost:5000/auth/google/callback",
     },
     (accessToken, refreshToken, profile, account, cb) => {
-      let query = new Query(
-        `SELECT * FROM pre_emp_users WHERE email=${account.emails[0].value}`
-      );
-      db().query(query, (err, result) => {
+      console.log("GoogleStrategy");
+      // account.emails[0].value || profile.getEmail()
+      pgUtil.selectLocalUserCB(pool, profile.getEmail(), (err, user, data) => {
         if (err) return cb(err);
-        if (result) {
-          // found a user
-          return cb(null, result.rows[0]);
-        } else {
-          // let cquery = new Query (`INSERT INTO pre_emp_users (email, password, firstname, lastname, position, created_at, updated_at) VALUES('${}',~~~)`
+        if (user) return cb(null, util.omitPassword(user));
+        else {
+          // TODO:
+          // search OAuth database (oauth_users)
+          // create one if non-existant
 
-          // make it route to user register page
-          return cb(null, false);
+          return cb(null, false, data);
         }
       });
     }
