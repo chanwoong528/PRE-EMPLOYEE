@@ -44,7 +44,7 @@ app.use((req,res,next) => {
 
 // routes
 app.use("/auth", require("./routes/auths"));
-app.get("*", (req, res) => res.redirect(process.env.SERVER_REACT_URL));
+app.get("*", (req, res) => res.redirect("http://localhost:3000"));
 
 // port
 const PORT = process.env.SERVER_PORT || 5000;

@@ -68,7 +68,7 @@ router.get("/google/callback", (req, res, next) => {
           console.log("2222222222222", req.session);
           console.log('=====================');
           if (err) console.log(err);
-          return res.redirect(process.env.SERVER_REACT_URL);
+          return res.redirect("http://localhost:3000");
         });
       }
       else {
