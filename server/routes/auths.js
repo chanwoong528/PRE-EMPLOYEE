@@ -56,35 +56,38 @@ router.get(
   passport.authenticate("google", { scope: ["email", "profile"] })
 );
 
-// router.get("/google/callback", (req, res, next) => {
-//     passport.authenticate("google", (err, user) => {
-//       console.log('=====================');
-//       console.log(user);
-//       console.log(req.user);
-//       if (user) {
-//         req.login(user, (err) => {
-//           console.log(req.user);
-//           console.log('=====================');
-//           if (err) console.log(err);
-//           return res.redirect(process.env.SERVER_REACT_URL);
-//         });
-//       }
-//       else {
-//         return res.status(500).send({ msg:"oauth login failed." });
-//       }
-//     })(req, res, next);
-//   }
-// );
-
-router.get("/google/callback", passport.authenticate("google", { 
-    session: true,
-    failureRedirect: "http://localhost:3000/login"
-  }),
-  (req, res) => {
-    console.log("succcesssss: ", req.user);
-    res.redirect('http://localhost:3000');
+router.get("/google/callback", (req, res, next) => {
+    passport.authenticate("google", (err, user) => {
+      console.log('=====================');
+      console.log(user);
+      console.log(req.user);
+      console.log("111111111111111", req.session);
+      if (user) {
+        req.login(user, (err) => {
+          console.log(req.user);
+          console.log("2222222222222", req.session);
+          console.log('=====================');
+          if (err) console.log(err);
+          return res.redirect(process.env.SERVER_REACT_URL);
+        });
+      }
+      else {
+        return res.status(500).send({ msg:"oauth login failed." });
+      }
+    })(req, res, next);
   }
 );
+
+// router.get("/google/callback", passport.authenticate("google", { 
+//     successRedirect: "http://localhost:3000/",
+//     failureRedirect: "http://localhost:3000/login"
+//   }),
+//   (req, res) => {
+//     console.log("succcesssss: ", req.user);
+//     console.log(req.session);
+//     res.send({ user:req.user });
+//   }
+// );
 
 // router.get("/logout", function (req, res) {
 //   req.logout();
