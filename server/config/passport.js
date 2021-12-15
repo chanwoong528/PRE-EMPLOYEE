@@ -96,6 +96,7 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, account, cb) => {
       console.log("GoogleStrategy");
+      if (!account) return cb (err);
       const googleUser = {
         provider:account.provider,
         username:account.emails[0].value,

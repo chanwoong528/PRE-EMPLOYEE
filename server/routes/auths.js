@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const passport = require("../config/passport");
 require("dotenv").config({ path: "../../env/db.env" });
+require("dotenv").config({ path: "../../env/server.env" });
 
 const bcrypt = require("bcrypt");
 const pgQuery = require("../utils/pgUtil");
@@ -55,15 +56,17 @@ router.get(
   passport.authenticate("google", { scope: ["email", "profile"] })
 );
 
-// router.get(
-//   "/google/callback",
-//   (req, res, next) => {
+// router.get("/google/callback", (req, res, next) => {
 //     passport.authenticate("google", (err, user) => {
-//       // console.log(user);
+//       console.log('=====================');
+//       console.log(user);
+//       console.log(req.user);
 //       if (user) {
 //         req.login(user, (err) => {
-//           // return res.status(200).send(user);
-//           return res.redirect('http://localhost:3000');
+//           console.log(req.user);
+//           console.log('=====================');
+//           if (err) console.log(err);
+//           return res.redirect(process.env.SERVER_REACT_URL);
 //         });
 //       }
 //       else {
@@ -79,13 +82,35 @@ router.get("/google/callback", passport.authenticate("google", {
   }),
   (req, res) => {
     console.log("succcesssss: ", req.user);
-    res.render('http://localhost:3000');
+    res.redirect('http://localhost:3000');
   }
 );
 
+// router.get("/logout", function (req, res) {
+//   req.logout();
+//   res.status(200).send({ msg: "session terminated." });
+// });
+
+// router.get("/google/callback", passport.authenticate("google", (err, user) => {
+//   if (err) res.redirect(process.env.SERVER_REACT_URL + '/login');
+//   else {
+//     req.login(user, (err) => {
+//       if (err) {
+//         console.log("google login failed: req.login returned error.");
+//         console.log(err);
+//         res.redirect(process.env.SERVER_REACT_URL + '/login');
+//       }
+//       else {
+//         console.log("succcesssss: ", req.user);
+//         res.redirect(process.env.SERVER_REACT_URL);
+//       }
+//     });
+//   }
+// }));
+
 router.get("/logout", function (req, res) {
-  req.logout();
-  res.status(200).send({ msg: "session terminated." });
+req.logout();
+res.status(200).send({ msg: "session terminated." });
 });
 
 module.exports = router;
