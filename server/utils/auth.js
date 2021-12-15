@@ -2,7 +2,7 @@ const util = require("./util");
 
 const auth = {};
 
-auth.validateLocalCreateData = (req, res, next) => {
+auth.validateCreateUserInput = (req, res, next) => {
   if (!req.body) return res.status(400).send({ msg:"User data not received." });
   if (!req.body.email || !req.body.password ||
     !req.body.passwordConf || !req.body.firstname || !req.body.lastname) {
@@ -18,6 +18,7 @@ auth.validateLocalCreateData = (req, res, next) => {
 };
 
 auth.validateLocalLoginData = (req, res, next) => {
+  console.log("req.user??? ", req.user);
   if (!req.body) return res.status(400).send({ msg:"Login info not received." });
   if (!req.body.email || !req.body.password) return res.status(400).send({ msg:"E-mail or password is missing." });
   // if (!util.validateEmail(email)) return res.status(400).send({ msg:"E-mail invalid." });

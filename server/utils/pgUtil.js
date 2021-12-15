@@ -8,7 +8,7 @@ var pgUtil = {};
  * @returns cb callback
  */
 pgUtil.selectLocalUserCB = (pool, email, cb) => {
-  connect(pool, getLocalSelectQuery(email), (err, result) => {
+  connect(pool, getLocalUserSelectQuery(email), (err, result) => {
     return cb (err, result);
   });
 };
@@ -63,6 +63,16 @@ pgUtil.insertLocalUser = async (pool, email, password, firstname, lastname, posi
   return result ? true : false;
 };
 
+pgUtil.insertOauthUser = async (pool, user) => {
+  const result = await pool().query(getOauthUserInsertQuery(user));
+  return result ? true : false;
+}
+
+pgUtil.insertAndSelectOauthUser = async (pool, user) => {
+  await pgUtil.insertOauthUser(pool, user);
+  return await pgUtil.selectOauthUser(pool, user.username);
+}
+
 module.exports = pgUtil;
 
 
@@ -72,7 +82,7 @@ getLocalUserSelectQuery = (email) => {
   return {
     name: 'select-from-local-users',
     text: `SELECT * FROM pre_emp_users WHERE email=$1`,
-    values: [email],
+    values: [ email ],
   };
 };
 
@@ -80,7 +90,7 @@ getOauthUserSelectQuery = (username) => {
   return {
     name: 'select-from-oauth-users',
     text: `SELECT * FROM oauth_users WHERE username=$1`,
-    values: [username],
+    values: [ username ],
   };
 };
 
@@ -90,6 +100,16 @@ getLocalUserInsertQuery = (email, password, firstname, lastname, position) => {
     text: `INSERT INTO public.pre_emp_users(
       email, password, firstname, lastname, "position", created_at, updated_at)
       VALUES ($1, $2, $3, $4, $5, TO_CHAR(NOW(),'YYYY-MM-DD'), TO_CHAR(NOW(),'YYYY-MM-DD'))`,
-    values: [email, password, firstname, lastname, position ? position.join(",") : ""],
+    values: [email, password, firstname, lastname, position ? position.join(",") : "" ],
   };
 };
+
+getOauthUserInsertQuery = (user) => {
+  return {
+    name: 'insert-into-oauth-users',
+    text: `INSERT INTO public.oauth_users(
+      provider, username, firstname, lastname, "position", created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, TO_CHAR(NOW(),'YYYY-MM-DD'), TO_CHAR(NOW(),'YYYY-MM-DD'))`,
+    values: [ user.provider, user.username, user.firstname, user.lastname, "" ],
+  }
+}

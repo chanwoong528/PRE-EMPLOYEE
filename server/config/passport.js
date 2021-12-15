@@ -9,7 +9,8 @@ const pool = require("../db/db.js");
 const util = require("../utils/util");
 
 passport.serializeUser((user, done) => {
-  done(null, user.email);
+  console.log("serialize: ", user);
+  done(null, user.email || user.username );
 });
 
 passport.deserializeUser((email, done) => {
@@ -17,35 +18,10 @@ passport.deserializeUser((email, done) => {
     if (err) return done(err);
     if (!user) return done(null, false);
     else {
-      return done(null, omitPassword(user));
+      return done(null, util.omitPassword(user));
     }
   });
 });
-
-// passport.use(
-//   "local-login",
-//   new LocalStrategy(
-//     {
-//       usernameField: "email",
-//       passwordField: "password",
-//       passReqToCallback: true,
-//     },
-//     async (req, email, password, done) => {
-//       pgq.selectLocalUser(pool, email, (err, user, data) => {
-//         if (err) return done(err);
-//         if (!user) return done(null, false, data);
-//         else {
-//           bcrypt.compare(password, user.password, (err, result) => {
-//             if (err) return done(err);
-//             if (!result) return done(null, false, { status:406, msg:"Password doesn't match." });
-//             // console.log(data.rows[0]);
-//             return done(null, util.omitPassword(user));
-//           });
-//         }
-//       });
-//     }
-//   )
-// );
 
 passport.use(
   "local-login",
@@ -72,6 +48,44 @@ passport.use(
   )
 );
 
+// passport.use(
+//   "google",
+//   new GoogleStrategy(
+//     {
+//       clientID: process.env.GOOGLE_CLIENT_ID,
+//       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+//       callbackURL: "http://localhost:5000/auth/google/callback",
+//     },
+//     async (accessToken, refreshToken, profile, account, cb) => {
+//       console.log("GoogleStrategy");
+//       // console.log(account);
+//       // account.emails[0].value || profile.getEmail()
+//       try {
+//         let user = await pgUtil.selectLocalUser(pool, account.emails[0].value);
+//         if (user) return cb(null, util.omitPassword(user));
+//         // TODO:
+//         // search OAuth database (oauth_users)
+//         // create one if non-existant
+//         const googleUser = {
+//           provider:account.provider,
+//           username:account.emails[0].value,
+//           firstname:account.name.givenName,
+//           lastname:account.name.familyName,
+//         };
+//         const oauth_user = await pgUtil.selectOauthUser(pool, googleUser.username);
+//         if (oauth_user) return cb(null, util.omitPassword(oauth_user));
+//         await pgUtil.insertOauthUser(pool, googleUser);
+//         oauth_user = await pgUtil.selectOauthUser(pool, googleUser.username);
+//         return cb (null, oauth_user);
+//       } catch (err) {
+//         console.log(err);
+//         return cb (null, false);
+//       }
+      
+//     }
+//   )
+// );
+
 passport.use(
   "google",
   new GoogleStrategy(
@@ -80,21 +94,15 @@ passport.use(
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: "http://localhost:5000/auth/google/callback",
     },
-    (accessToken, refreshToken, profile, account, cb) => {
+    async (accessToken, refreshToken, profile, account, cb) => {
       console.log("GoogleStrategy");
-      // account.emails[0].value || profile.getEmail()
-      pgUtil.selectLocalUserCB(pool, account.emails[0].value, (err, user, data) => {
-        if (err) return cb(err);
-        if (user) return cb(null, util.omitPassword(user));
-        else {
-          // TODO:
-          // search OAuth database (oauth_users)
-          // create one if non-existant
-
-            return cb(null, false, data);
-          }
-        }
-      );
+      const googleUser = {
+        provider:account.provider,
+        username:account.emails[0].value,
+        firstname:account.name.givenName,
+        lastname:account.name.familyName,
+      };
+      return cb (null, googleUser);
     }
   )
 );

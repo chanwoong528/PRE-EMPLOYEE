@@ -5,16 +5,16 @@ const app = express();
 const passport = require("./config/passport");
 
 // DB
-const db = require("./db/db");
-db().connect();
+// const db = require("./db/db");
+// db().connect();
 
-// others
+// Settings
 app.use(express.static(__dirname + "/public"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
-    origin: ["http://localhost:3000"],
+    origin: [process.env.SERVER_REACT_URL],
     methods: ["POST", "PUT", "GET", "PATCH"],
     credentials: true,
   })
@@ -35,9 +35,16 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Middleware base actions
+app.use((req,res,next) => {
+  res.locals.isAuthenticated = req.isAuthenticated();
+  res.locals.currentUser = req.user;
+  next();
+});
+
 // routes
 app.use("/auth", require("./routes/auths"));
-app.get("*", (req, res) => res.status(404).send({ err: "Invalid Access" }));
+app.get("*", (req, res) => res.redirect(process.env.SERVER_REACT_URL));
 
 // port
 const PORT = process.env.SERVER_PORT || 5000;
