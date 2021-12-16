@@ -37,16 +37,22 @@ router.post("/create", auth.validateCreateUserInput, async (req, res) => {
 
 router.post("/login", auth.validateLocalLoginData, (req, res, next) => {
   passport.authenticate("local-login", (err, user, data) => {
-    if (err) {
+    try{
+      if (err) throw new Error(err);
+      if (!user) {
+        return res.status(data.status).send(({ msg } = data));
+      } else {
+        req.login(user, (err) => {
+          if (err) throw new Error(err);
+          else {
+            req.session.user = user;
+            return res.status(200).send(user.email);
+          }
+        });
+      }
+    } catch (err) {
+      console.log(err);
       return res.status(500).send({ msg: "login: An error occurred." });
-    }
-    if (!user) {
-      return res.status(data.status).send(({ msg } = data));
-    } else {
-      req.login(user, (err) => {
-        if (err) return next(err);
-        return res.status(200).send(user);
-      });
     }
   })(req, res, next);
 });
@@ -58,21 +64,25 @@ router.get(
 
 router.get("/google/callback", (req, res, next) => {
     passport.authenticate("google", (err, user) => {
-      console.log('=====================');
-      console.log(user);
-      console.log(req.user);
-      console.log("111111111111111", req.session);
-      if (user) {
-        req.login(user, (err) => {
-          console.log(req.user);
-          console.log("2222222222222", req.session);
-          console.log('=====================');
-          if (err) console.log(err);
-          return res.redirect("http://localhost:3000");
-        });
-      }
-      else {
-        return res.status(500).send({ msg:"oauth login failed." });
+      try{
+        if (err) throw new Error("Google Login: Authentication returned error.");
+        console.log('=====================');
+        console.log("session (not initialized): ", req.session);
+        if (user) {
+          req.login(user, (err) => {
+            req.session.user = user;
+            console.log("req.session.user (initialized): ", req.session.user);
+            console.log('=====================');
+            if (err) throw new Error("Google Login: req.login returned error.");
+            return res.redirect("http://localhost:3000");
+          });
+        }
+        else {
+          return res.status(500).send({ msg:"oauth login failed." });
+        }
+      } catch (err) {
+        console.log(err);
+        return res.status(500).send({ msg:"Google Login: An error occurred." });
       }
     })(req, res, next);
   }

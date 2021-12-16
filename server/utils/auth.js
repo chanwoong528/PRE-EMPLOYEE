@@ -18,7 +18,7 @@ auth.validateCreateUserInput = (req, res, next) => {
 };
 
 auth.validateLocalLoginData = (req, res, next) => {
-  console.log("req.user??? ", req.user);
+  console.log("req.session.user: ", req.session.user);
   if (!req.body) return res.status(400).send({ msg:"Login info not received." });
   if (!req.body.email || !req.body.password) return res.status(400).send({ msg:"E-mail or password is missing." });
   // if (!util.validateEmail(email)) return res.status(400).send({ msg:"E-mail invalid." });

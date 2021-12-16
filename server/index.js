@@ -28,7 +28,12 @@ app.use(
   session({
     secret: process.env.SERVER_SESSION_SECRET,
     resave: true,
-    saveUninitialized: true,
+    saveUninitialized: false,
+    cookie: {
+      // secure:true, // browser won't send cookies to server if not https
+      maxAge:24 * 60 * 60 * 1000,
+      
+    },
   })
 );
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -37,8 +42,15 @@ app.use(passport.session());
 
 // Middleware base actions
 app.use((req,res,next) => {
+  console.log("---------");
   res.locals.isAuthenticated = req.isAuthenticated();
-  res.locals.currentUser = req.user;
+  console.log("isAuthenticated? ", req.isAuthenticated());
+  console.log(req.session);
+  if (res.locals.isAuthenticated) {
+    res.locals.currentUser = req.session.passport.user;
+    console.log("??? ", res.locals.currentUser);
+  }
+  console.log("---------");
   next();
 });
 

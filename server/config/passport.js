@@ -9,8 +9,9 @@ const pool = require("../db/db.js");
 const util = require("../utils/util");
 
 passport.serializeUser((user, done) => {
-  console.log("serialize: ", user);
-  done(null, user.email || user.username );
+  const id = user.email || user.username;
+  console.log("serialize: ", id);
+  done(null, id);
 });
 
 passport.deserializeUser((email, done) => {
@@ -33,7 +34,10 @@ passport.use(
     },
     async (req, email, password, done) => {
       const user = await pgUtil.selectLocalUser(pool, email);
-      if (!user) return done(null, false);
+      if (!user) return done(null, false, {
+        status: 406,
+        msg: "No such user exists.",
+      });
       bcrypt.compare(password, user.password, (err, result) => {
         if (err) return done(err);
         if (!result)
